@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Bingo</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Use Inter as the default font */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Hide scrollbars */
+        }
+        /* Custom styles for the timer bar */
+        #timer-bar-inner {
+            transition: width 0.1s linear;
+        }
+        /* Simple pulse animation for the message */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        #message-box {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main Game Container -->
+    <div class="bg-gray-800 p-6 sm:p-10 rounded-2xl shadow-2xl w-full max-w-2xl text-center">
+
+        <!-- Start Button (Visible initially) -->
+        <div id="start-screen">
+            <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 text-white">Image Bingo</h1>
+            <p class="text-lg sm:text-xl text-gray-300 mb-8">
+                Click "BINGO!" if the keyword matches one of the 3 images. You only have 3 seconds!
+            </p>
+            <button id="start-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg text-2xl transition-all duration-300 shadow-lg transform hover:scale-105">
+                Start Game
+            </button>
+        </div>
+
+        <!-- Game Area (Hidden initially) -->
+        <div id="game-area" class="hidden">
+            <!-- Header: Score and Round -->
+            <div class="flex justify-between items-center w-full mb-4 text-lg">
+                <div class="bg-gray-700 px-4 py-2 rounded-lg">
+                    Score: <span id="score" class="font-bold text-cyan-400">0</span>
+                </div>
+                <!-- Stop Button -->
+                <button id="stop-button" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-200 transform hover:scale-105 active:scale-95">
+                    Stop Game
+                </button>
+                <!-- End Stop Button -->
+                <div class="bg-gray-700 px-4 py-2 rounded-lg">
+                    Round: <span id="round" class="font-bold text-yellow-400">0</span>
+                </div>
+            </div>
+
+            <!-- Timer Bar -->
+            <div class="w-full bg-gray-700 rounded-full h-4 mb-5 overflow-hidden">
+                <div id="timer-bar-inner" class="bg-red-500 h-4 rounded-full" style="width: 100%;"></div>
+            </div>
+
+            <!-- Keyword -->
+            <!-- Updated this section to be a container for multiple keywords -->
+            <h2 class="text-2xl sm:text-3xl font-light mb-2">
+                Keyword(s):
+            </h2>
+            <div id="keyword-container" class="font-bold min-h-[4rem] mb-4 flex flex-wrap justify-center items-center gap-2">
+                <!-- Keywords will be dynamically inserted here as pills -->
+            </div>
+
+            <!-- Image Container -->
+            <div id="image-container" class="grid grid-cols-3 gap-3 sm:gap-4 mb-6 min-h-[100px] sm:min-h-[160px]">
+                <!-- Images will be dynamically inserted here -->
+            </div>
+
+            <!-- Bingo Button -->
+            <button id="bingo-button" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-6 rounded-lg text-2xl transition-all duration-300 shadow-lg transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                BINGO!
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Message Overlay (Hidden initially) -->
+    <div id="message-overlay" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div id="message-box" class="p-8 sm:p-12 rounded-xl shadow-2xl text-4xl sm:text-5xl font-extrabold text-center">
+            <span id="message-text"></span>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('start-screen');
+        const gameArea = document.getElementById('game-area');
+        const startButton = document.getElementById('start-button');
+        const scoreEl = document.getElementById('score');
+        const roundEl = document.getElementById('round');
+        const timerBarInner = document.getElementById('timer-bar-inner');
+        // Use new keyword-container
+        const keywordContainerEl = document.getElementById('keyword-container');
+        const imageContainer = document.getElementById('image-container');
+        const bingoButton = document.getElementById('bingo-button');
+        const stopButton = document.getElementById('stop-button'); // Get the new button
+        const messageOverlay = document.getElementById('message-overlay');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+
+        // --- Image Repository ---
+        // Now supports multiple keywords per image
+        const IMAGE_REPO = [
+            { keywords: ["Dog", "Pet", "Animal"], url: "https://placehold.co/300x300/F9A825/333333?text=Dog" },
+            { keywords: ["Cat", "Pet", "Animal"], url: "https://placehold.co/300x300/1E88E5/FFFFFF?text=Cat" },
+            { keywords: ["Tree", "Plant", "Nature"], url: "https://placehold.co/300x300/43A047/FFFFFF?text=Tree" },
+            { keywords: ["Car", "Vehicle", "Transport"], url: "https://placehold.co/300x300/D81B60/FFFFFF?text=Car" },
+            { keywords: ["Sun", "Space", "Nature"], url: "https://placehold.co/300x300/FB8C00/333333?text=Sun" },
+            { keywords: ["Moon", "Space", "Night"], url: "https://placehold.co/300x300/455A64/FFFFFF?text=Moon" },
+            { keywords: ["Boat", "Vehicle", "Water"], url: "https://placehold.co/300x300/00897B/FFFFFF?text=Boat" },
+            { keywords: ["Book", "Study", "Reading"], url: "https://placehold.co/300x300/8E24AA/FFFFFF?text=Book" },
+            { keywords: ["House", "Home", "Building"], url: "https://placehold.co/300x300/6D4C41/FFFFFF?text=House" },
+            { keywords: ["Fish", "Animal", "Water"], url: "https://placehold.co/300x300/039BE5/FFFFFF?text=Fish" },
+        ];
+
+        // --- Game State ---
+        let score = 0;
+        let round = 0;
+        // Use an array for keywords
+        let currentKeywords = [];
+        let currentImages = [];
+        let gameInProgress = false;
+        let roundTimerId = null; // For the 3-second timeout
+        let visualTimerId = null; // For the requestAnimationFrame
+        const ROUND_TIME = 3000; // 3 seconds in milliseconds
+        const MAX_ROUNDS = 10;
+
+        // --- Utility Function ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- Game Functions ---
+
+        /**
+         * Starts the game when the start button is clicked
+         */
+        function startGame() {
+            startScreen.classList.add('hidden');
+            gameArea.classList.remove('hidden');
+            startButton.textContent = "Start Game"; // Reset button text
+            score = 0;
+            round = 0;
+            scoreEl.textContent = score;
+            roundEl.textContent = round;
+            nextRound();
+        }
+
+        /**
+         * Sets up and starts the next round
+         */
+        function nextRound() {
+            // Check if game is over
+            if (round >= MAX_ROUNDS) {
+                endGame();
+                return;
+            }
+
+            // 1. Reset round state
+            gameInProgress = true;
+            round++;
+            roundEl.textContent = round;
+            messageOverlay.classList.add('hidden'); // Hide any previous messages
+            bingoButton.disabled = false;
+            
+            // 2. Determine this round's keyword and image set
+            
+            // --- Updated Logic for 1-3 Keywords ---
+            
+            // Get 3 unique random images for this round
+            shuffleArray(IMAGE_REPO);
+            currentImages = IMAGE_REPO.slice(0, 3);
+            
+            // Get all keywords present in these 3 images
+            const presentKeywords = new Set();
+            currentImages.forEach(img => {
+                img.keywords.forEach(kw => presentKeywords.add(kw));
+            });
+
+            // Get all possible keywords from the entire repo
+            const allKeywords = new Set();
+            IMAGE_REPO.forEach(img => {
+                img.keywords.forEach(kw => allKeywords.add(kw));
+            });
+
+            // Get keywords that are *not* present in the 3 images
+            const absentKeywords = new Set(
+                [...allKeywords].filter(kw => !presentKeywords.has(kw))
+            );
+
+            // --- Decide round type and number of keywords ---
+            let shouldKeywordBePresent = Math.random() < 0.7; // 70% chance a 'present' keyword will be shown
+            const numKeywords = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
+            
+            const presentArr = [...presentKeywords];
+            const absentArr = [...absentKeywords];
+            
+            // Handle edge cases where no present/absent keywords exist
+            if (presentArr.length === 0) shouldKeywordBePresent = false;
+            if (absentArr.length === 0) shouldKeywordBePresent = true;
+            if (presentArr.length === 0 && absentArr.length === 0) {
+                console.error("No keywords found in repository!");
+                return; // Can't play
+            }
+            
+            currentKeywords = []; // Reset keywords
+            shuffleArray(presentArr);
+            shuffleArray(absentArr);
+
+            if (shouldKeywordBePresent) {
+                // This round is a "click" round.
+                // Add 1 present keyword
+                currentKeywords.push(presentArr[0]);
+                // Fill the rest with absent keywords
+                currentKeywords.push(...absentArr.slice(0, numKeywords - 1));
+            } else {
+                // This round is a "don't click" round.
+                // Add 1-3 absent keywords
+                currentKeywords = absentArr.slice(0, numKeywords);
+            }
+            
+            // Shuffle the final list of keywords to show
+            shuffleArray(currentKeywords);
+
+            // 3. Render the keywords as pills
+            keywordContainerEl.innerHTML = currentKeywords.map(kw => 
+                `<span class="inline-block bg-gray-700 text-cyan-400 px-4 py-2 rounded-lg text-2xl sm:text-3xl">${kw}</span>`
+            ).join('');
+            // --- End of New Logic ---
+            
+            // 4. Render the images
+            imageContainer.innerHTML = ''; // Clear previous images
+            currentImages.forEach(img => {
+                const imgElement = document.createElement('img');
+                imgElement.src = img.url;
+                imgElement.alt = img.keywords.join(', '); // Use keywords for alt text
+                // Added responsive height and object-fit
+                imgElement.className = "w-full h-24 sm:h-40 md:h-48 object-cover rounded-lg shadow-lg border-2 border-gray-700";
+                imageContainer.appendChild(imgElement);
+            });
+
+            // 4. Start the timers
+            startTimers();
+        }
+
+        /**
+         * Starts the 3-second round timer and the visual timer bar
+         */
+        function startTimers() {
+            // Clear any old timers
+            clearTimeout(roundTimerId);
+            cancelAnimationFrame(visualTimerId);
+
+            const startTime = Date.now();
+
+            // This is the main 3-second game timer
+            roundTimerId = setTimeout(timerExpires, ROUND_TIME);
+
+            // This function updates the visual bar
+            function updateVisualTimer(timestamp) {
+                if (!gameInProgress) return; // Stop if game state changed
+
+                const elapsed = Date.now() - startTime;
+                const remainingPercent = Math.max(0, 100 - (elapsed / ROUND_TIME) * 100);
+                timerBarInner.style.width = `${remainingPercent}%`;
+
+                if (elapsed < ROUND_TIME) {
+                    visualTimerId = requestAnimationFrame(updateVisualTimer);
+                } else {
+                    timerBarInner.style.width = '0%';
+                }
+            }
+
+            // Start the visual timer loop
+            visualTimerId = requestAnimationFrame(updateVisualTimer);
+        }
+
+        /**
+         * Called when the player clicks the BINGO button
+         */
+        function handleBingoClick() {
+            if (!gameInProgress) return; // Prevent multiple clicks
+
+            // 1. Stop timers and game logic
+            gameInProgress = false;
+            clearTimeout(roundTimerId);
+            cancelAnimationFrame(visualTimerId);
+            bingoButton.disabled = true;
+
+            // 2. Check for win/loss
+            // Updated check for array of keywords
+            const presentKeywordsInImages = new Set();
+            currentImages.forEach(img => {
+                img.keywords.forEach(kw => presentKeywordsInImages.add(kw));
+            });
+            // Check if *any* of the shown keywords are in the images
+            const isAnyKeywordPresent = currentKeywords.some(kw => presentKeywordsInImages.has(kw));
+
+            if (isAnyKeywordPresent) {
+                // WIN! Correctly clicked.
+                score++;
+                scoreEl.textContent = score;
+                showResult(true, "BINGO! You got it!");
+            } else {
+                // LOSE! Clicked when keyword wasn't there.
+                showResult(false, "Oops! Not there.");
+            }
+        }
+
+        /**
+         * Called when the 3-second timer runs out
+         */
+        function timerExpires() {
+            if (!gameInProgress) return; // Already handled by a click
+
+            // 1. Stop game logic
+            gameInProgress = false;
+            cancelAnimationFrame(visualTimerId);
+            bingoButton.disabled = true;
+            timerBarInner.style.width = '0%'; // Ensure bar is empty
+
+            // 2. Check for win/loss
+            // Updated check for array of keywords
+            const presentKeywordsInImages = new Set();
+            currentImages.forEach(img => {
+                img.keywords.forEach(kw => presentKeywordsInImages.add(kw));
+            });
+            // Check if *any* of the shown keywords were in the images
+            const isAnyKeywordPresent = currentKeywords.some(kw => presentKeywordsInImages.has(kw));
+
+
+            if (isAnyKeywordPresent) {
+                // LOSE! Ran out of time when they should have clicked.
+                showResult(false, "Too slow! You missed it.");
+            } else {
+                // WIN! Correctly did *not* click.
+                score++;
+                scoreEl.textContent = score;
+                showResult(true, "Good eye! It wasn't there.");
+            }
+        }
+
+        /**
+         * Displays the win/loss message and schedules the next round
+         */
+        function showResult(isWin, message) {
+            messageText.textContent = message;
+            
+            // Apply win/loss colors
+            messageBox.classList.remove('text-green-400', 'text-red-400', 'bg-gray-800');
+            if (isWin) {
+                messageBox.classList.add('text-green-400', 'bg-gray-800');
+            } else {
+                messageBox.classList.add('text-red-400', 'bg-gray-800');
+            }
+
+            // Show the message
+            messageOverlay.classList.remove('hidden');
+
+            // Go to the next round after a short delay
+            setTimeout(nextRound, 1500);
+        }
+
+        /**
+         * Ends the game and shows the final score
+         */
+        function endGame() {
+            gameInProgress = false;
+            clearTimeout(roundTimerId);
+            cancelAnimationFrame(visualTimerId);
+            bingoButton.disabled = true;
+
+            // Show final score message
+            messageText.textContent = `Game Over! Score: ${score}/${MAX_ROUNDS}`;
+            messageBox.classList.remove('text-green-400', 'text-red-400', 'bg-gray-800');
+            messageBox.classList.add('text-cyan-400', 'bg-gray-800'); // Use a neutral color
+            messageOverlay.classList.remove('hidden');
+
+            // After a delay, reset to start screen
+            setTimeout(returnToStart, 3000); // Use the new function
+        }
+
+        /**
+         * Resets the game to the start screen.
+         * Can be called by the stop button or after the game ends.
+         */
+        function returnToStart() {
+            gameInProgress = false;
+            clearTimeout(roundTimerId);
+            cancelAnimationFrame(visualTimerId);
+            
+            messageOverlay.classList.add('hidden');
+            gameArea.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            startButton.textContent = "Play Again?";
+        }
+
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', startGame);
+        bingoButton.addEventListener('click', handleBingoClick);
+        stopButton.addEventListener('click', returnToStart); // Add listener for the new button
+    </script>
+</body>
+</html>
+
+
