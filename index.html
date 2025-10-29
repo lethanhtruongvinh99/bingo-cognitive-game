@@ -39,11 +39,22 @@
         <div id="start-screen">
             <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 text-white">Image Bingo</h1>
             <p class="text-lg sm:text-xl text-gray-300 mb-8">
-                Click "BINGO!" if the keyword matches one of the 3 images. You only have 3 seconds!
+                Click "BINGO!" if a keyword matches an image. You have 3 seconds!
             </p>
-            <button id="start-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg text-2xl transition-all duration-300 shadow-lg transform hover:scale-105">
-                Start Game
-            </button>
+            <!-- New Difficulty Buttons -->
+            <p class="text-lg text-gray-200 mb-4">Select Difficulty:</p>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="start-easy" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg text-xl transition-all duration-300 shadow-lg transform hover:scale-105">
+                    Easy 
+                </button>
+                <button id="start-medium" class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-5 rounded-lg text-xl transition-all duration-300 shadow-lg transform hover:scale-105">
+                    Medium 
+                </button>
+                <button id="start-hard" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-5 rounded-lg text-xl transition-all duration-300 shadow-lg transform hover:scale-105">
+                    Hard 
+                </button>
+            </div>
+            <!-- End Difficulty Buttons -->
         </div>
 
         <!-- Game Area (Hidden initially) -->
@@ -101,7 +112,11 @@
         // --- DOM Elements ---
         const startScreen = document.getElementById('start-screen');
         const gameArea = document.getElementById('game-area');
-        const startButton = document.getElementById('start-button');
+        // Get new difficulty buttons
+        const startEasyButton = document.getElementById('start-easy');
+        const startMediumButton = document.getElementById('start-medium');
+        const startHardButton = document.getElementById('start-hard');
+        
         const scoreEl = document.getElementById('score');
         const roundEl = document.getElementById('round');
         const timerBarInner = document.getElementById('timer-bar-inner');
@@ -115,7 +130,7 @@
         const messageText = document.getElementById('message-text');
 
         // --- Image Repository ---
-        // Now supports multiple keywords per image
+        // (Image repo code remains unchanged)
         const IMAGE_REPO = [
             { keywords: ["Dog", "Pet", "Animal"], url: "https://placehold.co/300x300/F9A825/333333?text=Dog" },
             { keywords: ["Cat", "Pet", "Animal"], url: "https://placehold.co/300x300/1E88E5/FFFFFF?text=Cat" },
@@ -132,6 +147,7 @@
         // --- Game State ---
         let score = 0;
         let round = 0;
+        let gameDifficulty = 2; // Will be set to 1, 2, or 3
         // Use an array for keywords
         let currentKeywords = [];
         let currentImages = [];
@@ -157,7 +173,6 @@
         function startGame() {
             startScreen.classList.add('hidden');
             gameArea.classList.remove('hidden');
-            startButton.textContent = "Start Game"; // Reset button text
             score = 0;
             round = 0;
             scoreEl.textContent = score;
@@ -209,7 +224,8 @@
 
             // --- Decide round type and number of keywords ---
             let shouldKeywordBePresent = Math.random() < 0.7; // 70% chance a 'present' keyword will be shown
-            const numKeywords = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
+            // Use the new gameDifficulty variable instead of a random number
+            const numKeywords = gameDifficulty; 
             
             const presentArr = [...presentKeywords];
             const absentArr = [...absentKeywords];
@@ -411,16 +427,26 @@
             messageOverlay.classList.add('hidden');
             gameArea.classList.add('hidden');
             startScreen.classList.remove('hidden');
-            startButton.textContent = "Play Again?";
+            // No need to set button text anymore
         }
 
+        /**
+         * Sets the difficulty and starts the game
+         */
+        function setDifficultyAndStart(difficulty) {
+            gameDifficulty = difficulty;
+            startGame();
+        }
 
         // --- Event Listeners ---
-        startButton.addEventListener('click', startGame);
+        // New listeners for difficulty buttons
+        startEasyButton.addEventListener('click', () => setDifficultyAndStart(1));
+        startMediumButton.addEventListener('click', () => setDifficultyAndStart(2));
+        startHardButton.addEventListener('click', () => setDifficultyAndStart(3));
+
         bingoButton.addEventListener('click', handleBingoClick);
         stopButton.addEventListener('click', returnToStart); // Add listener for the new button
     </script>
 </body>
 </html>
-
 
