@@ -130,18 +130,59 @@
         const messageText = document.getElementById('message-text');
 
         // --- Image Repository ---
+
+        // Fruits repo
+        const FRUIT_REPO = [
+            {
+                keywords: ["Apple", "Red", "Fruit"],
+                url: "./traicay/bo.jpg"
+            },
+            {
+                keywords: ["Banana", "Yellow", "Fruit"],
+                url: "./traicay/chuoi.jpg"
+            },
+            {
+                keywords: ["Orange", "Citrus", "Fruit"],
+                url: "./traicay/cam.jpg"
+            },
+            {
+                keywords: ["Grapes", "Purple", "Fruit"],
+                url: "./traicay/nho.jpg"
+            },
+            {
+                keywords: ["Pineapple", "Tropical", "Fruit"],
+                url: "./traicay/thom.jpg"
+            },
+            {
+                keywords: ["Watermelon", "Green", "Fruit"],
+                url: "./traicay/duahau.webp"
+            },
+            {
+                keywords: ["Papaya", "Orange", "Fruit"],
+                url: "./traicay/dudu.webp"
+            },
+            {
+                keywords: ["Lychee", "Red", "Fruit"],
+                url: "./traicay/vai.jpg"
+            },
+            {
+                keywords: ["Kiwi", "Green", "Fruit"],
+                url: "./traicay/kiwi.webp"
+            }
+        ]
         // (Image repo code remains unchanged)
         const IMAGE_REPO = [
-            { keywords: ["Dog", "Pet", "Animal"], url: "https://placehold.co/300x300/F9A825/333333?text=Dog" },
-            { keywords: ["Cat", "Pet", "Animal"], url: "https://placehold.co/300x300/1E88E5/FFFFFF?text=Cat" },
-            { keywords: ["Tree", "Plant", "Nature"], url: "https://placehold.co/300x300/43A047/FFFFFF?text=Tree" },
-            { keywords: ["Car", "Vehicle", "Transport"], url: "https://placehold.co/300x300/D81B60/FFFFFF?text=Car" },
-            { keywords: ["Sun", "Space", "Nature"], url: "https://placehold.co/300x300/FB8C00/333333?text=Sun" },
-            { keywords: ["Moon", "Space", "Night"], url: "https://placehold.co/300x300/455A64/FFFFFF?text=Moon" },
-            { keywords: ["Boat", "Vehicle", "Water"], url: "https://placehold.co/300x300/00897B/FFFFFF?text=Boat" },
-            { keywords: ["Book", "Study", "Reading"], url: "https://placehold.co/300x300/8E24AA/FFFFFF?text=Book" },
-            { keywords: ["House", "Home", "Building"], url: "https://placehold.co/300x300/6D4C41/FFFFFF?text=House" },
-            { keywords: ["Fish", "Animal", "Water"], url: "https://placehold.co/300x300/039BE5/FFFFFF?text=Fish" },
+            // { keywords: ["Dog", "Pet", "Animal"], url: "https://placehold.co/300x300/F9A825/333333?text=Dog" },
+            // { keywords: ["Cat", "Pet", "Animal"], url: "https://placehold.co/300x300/1E88E5/FFFFFF?text=Cat" },
+            // { keywords: ["Tree", "Plant", "Nature"], url: "https://placehold.co/300x300/43A047/FFFFFF?text=Tree" },
+            // { keywords: ["Car", "Vehicle", "Transport"], url: "https://placehold.co/300x300/D81B60/FFFFFF?text=Car" },
+            // { keywords: ["Sun", "Space", "Nature"], url: "https://placehold.co/300x300/FB8C00/333333?text=Sun" },
+            // { keywords: ["Moon", "Space", "Night"], url: "https://placehold.co/300x300/455A64/FFFFFF?text=Moon" },
+            // { keywords: ["Boat", "Vehicle", "Water"], url: "https://placehold.co/300x300/00897B/FFFFFF?text=Boat" },
+            // { keywords: ["Book", "Study", "Reading"], url: "https://placehold.co/300x300/8E24AA/FFFFFF?text=Book" },
+            // { keywords: ["House", "Home", "Building"], url: "https://placehold.co/300x300/6D4C41/FFFFFF?text=House" },
+            // { keywords: ["Fish", "Animal", "Water"], url: "https://placehold.co/300x300/039BE5/FFFFFF?text=Fish" },
+            ...FRUIT_REPO
         ];
 
         // --- Game State ---
